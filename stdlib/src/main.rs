@@ -1,6 +1,6 @@
+use inkwell::context::Context;
 use inkwell::memory_buffer::MemoryBuffer;
 use inkwell::module::Module;
-use inkwell::context::Context;
 use inkwell::OptimizationLevel;
 
 static CHARJ_LIB: &[u8] = include_bytes!("../stdlib/charj.bc");
@@ -10,12 +10,14 @@ fn main() {
     let module = load_std_lib(&context);
 
     match module.get_function("main") {
-        None => { println!("none"); }
+        None => {
+            println!("none");
+        }
         Some(_fun) => {
-            let ee = module.create_jit_execution_engine(OptimizationLevel::None).unwrap();
-            let maybe_fn = unsafe {
-                ee.get_function::<unsafe extern "C" fn() -> f64>("main")
-            };
+            let ee = module
+                .create_jit_execution_engine(OptimizationLevel::None)
+                .unwrap();
+            let maybe_fn = unsafe { ee.get_function::<unsafe extern "C" fn() -> f64>("main") };
 
             unsafe {
                 maybe_fn.unwrap().call();
