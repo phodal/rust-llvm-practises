@@ -14,6 +14,6 @@ edition = "2018"
 [workspace]
 # for ideas only
 members = [
-    "llvm-rust-helloworld",
-    "llvm-stdlib",
+    "helloworld",
+    "stdlib",
 ]
