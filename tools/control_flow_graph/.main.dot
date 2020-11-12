@@ -1,0 +1,5 @@
+digraph "CFG for 'main' function" {
+	label="CFG for 'main' function";
+
+	Node0x7ff3bac21110 [shape=record,label="{entrypoint:\l  %3 = call i64 (i8*, ...) @puts(i8* getelementptr inbounds ([14 x i8], [14 x\l... i8]* @hello, i64 0, i64 0))\l  ret i64 0\l}"];
+}
