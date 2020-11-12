@@ -52,7 +52,7 @@ checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 name = "hello"
 version = "0.1.0"
 dependencies = [
- "inkwell",
+ "inkwell 0.1.0-llvm10sample",
 ]
 
 [[package]]
@@ -62,12 +62,36 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e079c12273d96e41481454a37ad968e607e1ce51b39b9facd3a802a12df6e9dc"
 dependencies = [
  "either",
- "inkwell_internals",
+ "inkwell_internals 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc",
  "llvm-sys",
  "once_cell",
  "parking_lot",
  "regex",
+]
+
+[[package]]
+name = "inkwell"
+version = "0.1.0"
+source = "git+https://github.com/TheDan64/inkwell#4e8c101ea5f1961b0e7f1e9a275ae508750f3b28"
+dependencies = [
+ "either",
+ "inkwell_internals 0.2.0 (git+https://github.com/TheDan64/inkwell)",
+ "libc",
+ "llvm-sys",
+ "once_cell",
+ "parking_lot",
+ "regex",
+]
+
+[[package]]
+name = "inkwell_internals"
+version = "0.2.0"
+source = "git+https://github.com/TheDan64/inkwell#4e8c101ea5f1961b0e7f1e9a275ae508750f3b28"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -110,7 +134,7 @@ version = "0.1.0"
 name = "llvm-stdlib"
 version = "0.1.0"
 dependencies = [
- "inkwell",
+ "inkwell 0.1.0-llvm10sample",
 ]
 
 [[package]]
@@ -172,6 +196,10 @@ dependencies = [
  "smallvec",
  "winapi",
 ]
+
+[[package]]
+name = "pass"
+version = "0.1.0"
 
 [[package]]
 name = "proc-macro2"
@@ -267,6 +295,14 @@ name = "unicode-xid"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f7fe0bb3479651439c9112f72b6c505038574c9fbb575ed1bf3b797fa39dd564"
+
+[[package]]
+name = "well"
+version = "0.1.0"
+dependencies = [
+ "inkwell 0.1.0",
+ "llvm-sys",
+]
 
 [[package]]
 name = "winapi"
