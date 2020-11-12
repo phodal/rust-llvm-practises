@@ -36,6 +36,7 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
             .build_return(Some(&i32_type.const_int(0, false)));
 
         let _result = self.module.print_to_file("main.ll");
+
         self.execute()
     }
 
@@ -56,11 +57,14 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
     }
 
     fn execute(&self) {
+        // verify function logic, change emit_printf_call type float i32_type to f64_type will works
+        self.module.get_function("main").unwrap().verify(true);
+
         let ee = self
             .module
             .create_jit_execution_engine(OptimizationLevel::None)
             .unwrap();
-        let maybe_fn = unsafe { ee.get_function::<unsafe extern "C" fn() -> f64>("main") };
+        let maybe_fn = unsafe { ee.get_function::<unsafe extern "C" fn() -> i32>("main") };
 
         let compiled_fn = match maybe_fn {
             Ok(f) => f,
