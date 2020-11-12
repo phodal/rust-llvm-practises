@@ -1,7 +1,7 @@
 use inkwell::builder::Builder;
 use inkwell::context::Context;
 use inkwell::module::{Linkage, Module};
-use inkwell::types::IntType;
+use inkwell::types::{IntType, FloatType};
 use inkwell::values::PointerValue;
 use inkwell::{AddressSpace, OptimizationLevel};
 
@@ -32,18 +32,18 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
 
         self.builder.position_at_end(basic_block);
 
-        let i32_type = self.emit_printf_call(&"hello, world!\n", "hello");
+        let i64_type = self.emit_printf_call(&"hello, world!\n", "hello");
         self.builder
-            .build_return(Some(&i32_type.const_int(0, false)));
+            .build_return(Some(&i64_type.const_int(0, false)));
 
         let _result = self.module.print_to_file("main.ll");
         self.execute()
     }
 
     fn emit_printf_call(&self, hello_str: &&str, name: &str) -> IntType {
-        let i32_type = self.context.i32_type();
+        let i64_type = self.context.i64_type();
         let str_type = self.context.i8_type().ptr_type(AddressSpace::Generic);
-        let printf_type = i32_type.fn_type(&[str_type.into()], true);
+        let printf_type = i64_type.fn_type(&[str_type.into()], true);
 
         // `printf` is same to `puts`
         let printf = self
@@ -53,7 +53,7 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
         let pointer_value = self.emit_global_string(hello_str, name);
         self.builder.build_call(printf, &[pointer_value.into()], "");
 
-        i32_type
+        i64_type
     }
 
     fn execute(&self) {
