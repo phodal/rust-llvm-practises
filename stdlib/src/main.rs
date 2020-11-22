@@ -27,7 +27,7 @@ fn main() {
 }
 
 pub fn load_std_lib(context: &Context) -> Module {
-    let memory = MemoryBuffer::create_from_memory_range(CHARJ_LIB, "solana");
+    let memory = MemoryBuffer::create_from_memory_range(CHARJ_LIB, "charj");
     let module = Module::parse_bitcode_from_buffer(&memory, context).unwrap();
     return module;
 }
