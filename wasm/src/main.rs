@@ -1,22 +1,13 @@
 extern crate inkwell;
 
-use inkwell::{OptimizationLevel, AddressSpace};
+use inkwell::{AddressSpace, OptimizationLevel};
 use inkwell::builder::Builder;
 use inkwell::context::Context;
-use inkwell::execution_engine::{ExecutionEngine, JitFunction};
-use inkwell::module::{Module, Linkage};
-
-use std::error::Error;
-use inkwell::targets::{CodeModel, RelocMode, TargetTriple, FileType};
-use inkwell::types::IntType;
-use inkwell::values::{PointerValue, FunctionValue};
+use inkwell::module::{Linkage, Module};
 use inkwell::passes::PassManager;
-
-/// Convenience type alias for the `sum` function.
-///
-/// Calling this is innately `unsafe` because there's no guarantee it doesn't
-/// do `unsafe` operations internally.
-type SumFunc = unsafe extern "C" fn(u64, u64, u64) -> u64;
+use inkwell::targets::{CodeModel, FileType, RelocMode, TargetTriple};
+use inkwell::types::IntType;
+use inkwell::values::{FunctionValue, PointerValue};
 
 struct CodeGen<'ctx, 'a> {
     context: &'ctx Context,
@@ -79,7 +70,6 @@ fn main() {
     let context = Context::create();
     let module = context.create_module("repl");
 
-    // Create FPM
     let fpm = PassManager::create(&module);
 
     fpm.add_instruction_combining_pass();
@@ -106,7 +96,7 @@ fn main() {
     let target = inkwell::targets::Target::from_name("wasm32").unwrap();
     let target_machine = target
         .create_target_machine(
-            &TargetTriple::create("wasm32-unknown-emscripten"),
+            &TargetTriple::create("wasm32-unknown-unknown-wasm"),
             "",
             "",
             OptimizationLevel::Aggressive,
@@ -115,6 +105,6 @@ fn main() {
         )
         .unwrap();
 
-    target_machine.write_to_file(&codegen.module, FileType::Object, "hello.wasm".as_ref());
+    let _result = target_machine.write_to_file(&codegen.module, FileType::Object, "hello.wasm".as_ref());
 }
 
