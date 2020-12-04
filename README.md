@@ -18,6 +18,12 @@
 brew install cmake ninja
 ```
 
+Homebrew 11
+
+```
+brew install llvm
+```
+
 #### remote
 
 ```bash
@@ -55,6 +61,6 @@ llvmenv build-entry local-llvm
 ### run & build
 
 ```
-LLVM_SYS_100_PREFIX=$HOME/llvm/llvm-10.0.1.src/build cargo build
-LLVM_SYS_100_PREFIX=$HOME/llvm/llvm-10.0.1.src/build cargo run
+LLVM_SYS_101_PREFIX=$HOME/llvm/llvm-10.0.1.src/build cargo build
+LLVM_SYS_101_PREFIX=$HOME/llvm/llvm-10.0.1.src/build cargo run
 ````
