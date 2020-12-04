@@ -7,21 +7,17 @@ static CHARJ_LIB: &[u8] = include_bytes!("../stdlib/charj.bc");
 
 fn main() {
     let context = Context::create();
-    let module = load_std_lib(&context);
+    let memory = MemoryBuffer::create_from_memory_range(CHARJ_LIB, "charj");
+    let module = Module::parse_bitcode_from_buffer(&memory, &context).unwrap();
 
-    match module.get_function("main") {
-        None => {
-            println!("none");
-        }
-        Some(_fun) => {
-            let ee = module
-                .create_jit_execution_engine(OptimizationLevel::None)
-                .unwrap();
-            let maybe_fn = unsafe { ee.get_function::<unsafe extern "C" fn() -> f64>("main") };
+    if let Some(_fun) = module.get_function("main") {
+        let ee = module
+            .create_jit_execution_engine(OptimizationLevel::None)
+            .unwrap();
+        let maybe_fn = unsafe { ee.get_function::<unsafe extern "C" fn() -> f64>("main") };
 
-            unsafe {
-                maybe_fn.unwrap().call();
-            }
+        unsafe {
+            maybe_fn.unwrap().call();
         }
     }
 }
