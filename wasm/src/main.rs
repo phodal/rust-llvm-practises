@@ -6,12 +6,11 @@ use inkwell::context::Context;
 use inkwell::module::{Linkage, Module};
 use inkwell::passes::PassManager;
 use inkwell::targets::{CodeModel, FileType, RelocMode, TargetTriple};
-use inkwell::types::IntType;
 use inkwell::values::{FunctionValue, PointerValue};
 
 struct CodeGen<'ctx, 'a> {
     context: &'ctx Context,
-    module: &'a Module<'ctx>,
+    module: Module<'ctx>,
     builder: Builder<'ctx>,
     pub fpm: &'a PassManager<FunctionValue<'ctx>>,
 }
@@ -34,44 +33,38 @@ impl<'ctx, 'a> CodeGen<'ctx, 'a> {
         pointer_value
     }
 
-    fn emit_printf_call(&self, hello_str: &&str, name: &str) -> IntType {
-        let i32_type = self.context.i32_type();
-        let str_type = self.context.i8_type().ptr_type(AddressSpace::Generic);
-        let printf_type = i32_type.fn_type(&[str_type.into()], true);
+    fn compile(&self) {
+        let function_type = self.context.void_type().fn_type(&[], false);
 
-        let printf = self
+        // create function & block
+        let main_func = self.module.add_function("main", function_type, None);
+        let main_block = self.context.append_basic_block(main_func, "main");
+        self.builder.position_at_end(main_block);
+
+        // create out function
+        let str_type = self.context.i8_type().ptr_type(AddressSpace::Generic);
+        let printf_type = self.context.i32_type().fn_type(&[str_type.into()], true);
+        let printf_func = self
             .module
             .add_function("out", printf_type, Some(Linkage::External));
 
-        let pointer_value = self.emit_global_string(hello_str, name);
-        self.builder.build_call(printf, &[pointer_value.into()], "call");
+        // make call
+        let pointer_value = self.emit_global_string(&"hello, world!", "");
+        self.builder.build_call(printf_func, &[pointer_value.into()], "");
 
-        i32_type
-    }
-
-    fn compile(&self) {
-        let i32_type = self.context.i32_type();
-        let function_type = i32_type.fn_type(&[], false);
-
-        let function = self.module.add_function("main", function_type, Some(Linkage::External));
-        let basic_block = self.context.append_basic_block(function, "entry");
-
-        self.builder.position_at_end(basic_block);
-
-        let i32_type = self.emit_printf_call(&"hello, world!\n", "hello");
         self.builder
-            .build_return(Some(&i32_type.const_int(0, false)));
+            .build_return(Some(&self.context.i32_type().const_int(0, false)));
 
-        self.fpm.run_on(&function);
+        self.fpm.run_on(&main_func);
     }
 }
 
 fn main() {
     let context = Context::create();
-    let module = context.create_module("repl");
+    let module = context.create_module("main");
+    let builder = context.create_builder();
 
     let fpm = PassManager::create(&module);
-
     fpm.add_instruction_combining_pass();
     fpm.add_reassociate_pass();
     fpm.add_gvn_pass();
@@ -80,16 +73,9 @@ fn main() {
     fpm.add_promote_memory_to_register_pass();
     fpm.add_instruction_combining_pass();
     fpm.add_reassociate_pass();
-
     fpm.initialize();
 
-    let codegen = CodeGen {
-        context: &context,
-        module: &module,
-        builder: context.create_builder(),
-        fpm: &fpm,
-    };
-
+    let codegen = CodeGen { context: &context, module, builder, fpm: &fpm };
     codegen.compile();
 
     inkwell::targets::Target::initialize_webassembly(&Default::default());
@@ -99,7 +85,7 @@ fn main() {
             &TargetTriple::create("wasm32-unknown-unknown-wasm"),
             "",
             "",
-            OptimizationLevel::Aggressive,
+            OptimizationLevel::None,
             RelocMode::Default,
             CodeModel::Default,
         )
