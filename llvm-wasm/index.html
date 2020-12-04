@@ -1,0 +1,58 @@
+<html>
+<head>
+    <script>
+        if (!('WebAssembly' in window)) {
+            var msg = 'WebAssembly not supported';
+            alert(msg);
+            console.error(msg);
+        }
+
+        function loadWebAssembly(filename, imports) {
+            return fetch(filename)
+                .then(response => response.arrayBuffer())
+                .then(buffer => WebAssembly.compile(buffer))
+                .then(module => {
+                    console.log(module);
+                    imports = imports || {};
+                    imports.env = imports.env || {};
+                    if (!imports.env.__linear_memory) {
+                        // Setup our Memory import, initializing it
+                        // to use 256 pages of memory.
+                        imports.env.__linear_memory = new WebAssembly.Memory({initial: 256});
+                    }
+                    if (!imports.env.__indirect_function_table) {
+                        // Setup our Table with an inital size of 0,
+                        // 'anyfunc' is currently the option here
+                        imports.env.__indirect_function_table = new WebAssembly.Table({initial: 0, element: 'anyfunc'});
+                    }
+                    var consoleDiv = document.getElementById('console');
+                    imports.env.log = function consoleLogString(offset, length) {
+                        // Convert the bytes stored in our memory buffer
+                        // at position offset.
+                        var bytes = new Uint8Array(imports.env.__linear_memory.buffer, offset, length);
+                        // Convert our byte array to a utf8 string
+                        var string = new TextDecoder('utf8').decode(bytes);
+                        // Append the string to the DOM
+                        var content = document.createTextNode(string);
+                        consoleDiv.appendChild(content);
+                    }
+                    // Create a WebAssembly instance with our compiled
+                    // module and pass in our import object
+                    return new WebAssembly.Instance(module, imports);
+                });
+        }
+
+        // Call our load function.
+        loadWebAssembly('main.wasm').then(instance => {
+            // Grab our exports and call our main function
+            var exports = instance.exports;
+            var main = exports.main;
+            console.log(main);
+            main();
+        });
+    </script>
+</head>
+<body>
+<div id="console"></div>
+</body>
+</html>

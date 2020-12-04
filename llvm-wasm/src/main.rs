@@ -43,7 +43,7 @@ fn main() {
         LLVMBuildRetVoid(builder);
 
         // write our bitcode file
-        LLVMSetTarget(module, c_str!("wasm32-unknown-unknown-elf"));
+        LLVMSetTarget(module, c_str!("wasm32-unknown-unknown-wasm"));
         LLVMWriteBitcodeToFile(module, c_str!("main.bc"));
 
         // clean up
