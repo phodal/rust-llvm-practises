@@ -35,8 +35,8 @@ impl<'ctx> CodeGen<'ctx> {
         let function_type = self.context.void_type().fn_type(&[], false);
 
         // create function & block
-        let main_func = self.module.add_function("main", function_type, None);
-        let main_block = self.context.append_basic_block(main_func, "main");
+        let main_func = self.module.add_function("hello", function_type, None);
+        let main_block = self.context.append_basic_block(main_func, "hello");
         self.builder.position_at_end(main_block);
 
         // create inner out function
