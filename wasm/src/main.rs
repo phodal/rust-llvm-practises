@@ -55,7 +55,7 @@ impl<'ctx, 'a> CodeGen<'ctx, 'a> {
     }
 
     fn create_out_func(&self) -> FunctionValue {
-        if let Some(fun) = self.module.get_function("out") {
+        if let Some(fun) = self.module.get_function("jsprint") {
             return fun
         }
 
@@ -63,7 +63,7 @@ impl<'ctx, 'a> CodeGen<'ctx, 'a> {
         let printf_type = self.context.i32_type().fn_type(&[str_type.into()], true);
         let printf_func = self
             .module
-            .add_function("out", printf_type, Some(Linkage::External));
+            .add_function("jsprint", printf_type, Some(Linkage::External));
         printf_func
     }
 }
