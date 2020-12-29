@@ -4,18 +4,16 @@ use inkwell::{AddressSpace, OptimizationLevel};
 use inkwell::builder::Builder;
 use inkwell::context::Context;
 use inkwell::module::{Linkage, Module};
-use inkwell::passes::PassManager;
 use inkwell::targets::{CodeModel, FileType, RelocMode, TargetTriple};
 use inkwell::values::{FunctionValue, PointerValue};
 
-struct CodeGen<'ctx, 'a> {
+struct CodeGen<'ctx> {
     context: &'ctx Context,
     module: Module<'ctx>,
     builder: Builder<'ctx>,
-    pub fpm: &'a PassManager<FunctionValue<'ctx>>,
 }
 
-impl<'ctx, 'a> CodeGen<'ctx, 'a> {
+impl<'ctx> CodeGen<'ctx> {
     fn emit_global_string(&self, string: &&str, name: &str) -> PointerValue {
         let ty = self.context.i8_type().array_type(string.len() as u32);
         let gv = self
@@ -50,8 +48,6 @@ impl<'ctx, 'a> CodeGen<'ctx, 'a> {
 
         self.builder
             .build_return(Some(&self.context.i32_type().const_int(0, false)));
-
-        self.fpm.run_on(&main_func);
     }
 
     fn create_out_func(&self) -> FunctionValue {
@@ -73,18 +69,7 @@ fn main() {
     let module = context.create_module("main");
     let builder = context.create_builder();
 
-    let fpm = PassManager::create(&module);
-    fpm.add_instruction_combining_pass();
-    fpm.add_reassociate_pass();
-    fpm.add_gvn_pass();
-    fpm.add_cfg_simplification_pass();
-    fpm.add_basic_alias_analysis_pass();
-    fpm.add_promote_memory_to_register_pass();
-    fpm.add_instruction_combining_pass();
-    fpm.add_reassociate_pass();
-    fpm.initialize();
-
-    let codegen = CodeGen { context: &context, module, builder, fpm: &fpm };
+    let codegen = CodeGen { context: &context, module, builder};
     codegen.compile();
 
     inkwell::targets::Target::initialize_webassembly(&Default::default());
