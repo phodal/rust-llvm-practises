@@ -100,6 +100,14 @@ fn main() {
         )
         .unwrap();
 
-    let _result = target_machine.write_to_file(&codegen.module, FileType::Object, "hello.wasm".as_ref());
+    let result = target_machine.write_to_file(&codegen.module, FileType::Object, "hello.wasm".as_ref());
+    match result {
+        Ok(()) => {
+            println!("write file ok");
+        }
+        Err(err) => {
+            println!("{:?}", err);
+        }
+    }
 }
 
