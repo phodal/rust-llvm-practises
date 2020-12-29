@@ -41,12 +41,8 @@ impl<'ctx, 'a> CodeGen<'ctx, 'a> {
         let main_block = self.context.append_basic_block(main_func, "main");
         self.builder.position_at_end(main_block);
 
-        // create out function
-        let str_type = self.context.i8_type().ptr_type(AddressSpace::Generic);
-        let printf_type = self.context.i32_type().fn_type(&[str_type.into()], true);
-        let printf_func = self
-            .module
-            .add_function("out", printf_type, Some(Linkage::External));
+        // create inner out function
+        let printf_func = self.create_out_func();
 
         // make call
         let pointer_value = self.emit_global_string(&"hello, world!", "");
@@ -56,6 +52,19 @@ impl<'ctx, 'a> CodeGen<'ctx, 'a> {
             .build_return(Some(&self.context.i32_type().const_int(0, false)));
 
         self.fpm.run_on(&main_func);
+    }
+
+    fn create_out_func(&self) -> FunctionValue {
+        if let Some(fun) = self.module.get_function("out") {
+            return fun
+        }
+
+        let str_type = self.context.i8_type().ptr_type(AddressSpace::Generic);
+        let printf_type = self.context.i32_type().fn_type(&[str_type.into()], true);
+        let printf_func = self
+            .module
+            .add_function("out", printf_type, Some(Linkage::External));
+        printf_func
     }
 }
 
