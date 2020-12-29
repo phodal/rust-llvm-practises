@@ -31,6 +31,7 @@
         loadWebAssembly('hello.wasm').then(results => {
             const instance = results.instance;
             memory = instance.exports.pagememory;
+            console.log(instance.exports);
             instance.exports.helloworld();
         });
     </script>
