@@ -1,26 +1,42 @@
 <html>
 <head>
     <script>
-        var memory;
-        fetch('./hello.wasm').then(response =>
-            response.arrayBuffer()
-        ).then(bytes => WebAssembly.instantiate(bytes, {
-                env: {
-                    jsprint: function jsprint(byteOffset) {
-                        var s = '';
-                        var a = new Uint8Array(memory.buffer);
-                        for (var i = byteOffset; a[i]; i++) {
-                            s += String.fromCharCode(a[i]);
-                        }
-                        document.write(s);
+        if (!('WebAssembly' in window)) {
+            var msg = 'WebAssembly not supported';
+            alert(msg);
+            console.error(msg);
+        }
+
+        function loadWebAssembly(filename, imports) {
+            return fetch(filename)
+                .then(response => response.arrayBuffer())
+                .then(buffer => WebAssembly.compile(buffer))
+                .then(module => {
+                    imports = imports || {};
+                    imports.env = imports.env || {};
+                    if (!imports.env.__linear_memory) {
+                        imports.env.__linear_memory = new WebAssembly.Memory({initial: 256});
                     }
-                }
-            })
-        ).then(results => {
-            instance = results.instance;
-            memory = instance.exports.pagememory;
-            instance.exports.helloworld();
-        }).catch(console.error);
+                    if (!imports.env.__indirect_function_table) {
+                        imports.env.__indirect_function_table = new WebAssembly.Table({initial: 0, element: 'anyfunc'});
+                    }
+                    var consoleDiv = document.getElementById('console');
+                    imports.env.jsprint = function consoleLogString(offset, length) {
+                        var bytes = new Uint8Array(imports.env.__linear_memory.buffer, offset, length);
+                        var string = new TextDecoder('utf8').decode(bytes);
+                        var content = document.createTextNode(string);
+                        consoleDiv.appendChild(content);
+                    }
+                    return new WebAssembly.Instance(module, imports);
+                });
+        }
+
+        loadWebAssembly('hello.wasm').then(instance => {
+            // Grab our exports and call our main function
+            var exports = instance.exports;
+            var main = exports.main;
+            main();
+        });
     </script>
 </head>
 <body>
